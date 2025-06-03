@@ -12,9 +12,24 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f2f5;
+            background-image: url('https://i.imgur.com/edited-image-url.jpg'); /* Replace with actual image URL */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85); /* Overlay for readability */
+            z-index: -1;
         }
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
             background: #e2e8f0;
@@ -27,8 +42,18 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #64748b;
         }
+        .rate-input-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+        }
+        .rate-input-group label {
+            flex: 1;
+        }
         .rate-input-group input {
-            width: calc(50% - 8px);
+            width: 100%;
+            flex: 1;
         }
         .tooltip {
             position: relative;
@@ -50,55 +75,131 @@
         .error-message {
             transition: opacity 0.3s ease-in-out;
         }
+        /* Mobile-specific adjustments */
+        @media (max-width: 640px) {
+            h1 span.text-3xl {
+                font-size: 1.5rem;
+            }
+            h1 span.text-xl {
+                font-size: 1rem;
+            }
+            h2.text-2xl {
+                font-size: 1.25rem;
+            }
+            h3.text-xl {
+                font-size: 1.1rem;
+            }
+            label.text-lg {
+                font-size: 0.9rem;
+            }
+            input[type="number"],
+            button {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+            button {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+            .rate-input-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .rate-input-group input {
+                width: 100%;
+                margin-left: 0 !important;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            thead {
+                display: none;
+            }
+            tbody tr {
+                display: flex;
+                flex-direction: column;
+                border: 1px solid #e2e8f0;
+                margin-bottom: 1rem;
+                padding: 0.5rem;
+                background: #fff;
+                border-radius: 0.5rem;
+            }
+            tbody td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                text-align: left !important;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            tbody td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 0.5rem;
+            }
+            tbody td:last-child {
+                border-bottom: none;
+            }
+            canvas#costChart {
+                height: 200px !important;
+            }
+            .flex.space-x-4 {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .flex.space-x-4 button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
-<body class="p-4 sm:p-6 lg:p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10">
-        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+<body class="p-2 sm:p-4 lg:p-6">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-4">
             <span class="block">Amravati Home Construction Cost Estimator</span>
-            <span class="block text-xl sm:text-2xl text-blue-600 mt-2">Get Your Basic Estimate for 2025</span>
+            <span class="block text-lg sm:text-xl text-blue-600 mt-1">Get Your Basic Estimate for 2025</span>
         </h1>
 
-        <p class="text-center text-gray-600 mb-8">
+        <p class="text-center text-gray-600 mb-6 text-sm sm:text-base">
             This tool provides a basic estimate for residential construction costs in Amravati based on your desired built-up area.
             Please note that these are estimates and actual costs may vary.
         </p>
 
-        <div class="bg-blue-50 p-6 rounded-xl shadow-inner mb-8">
-            <div class="mb-6">
-                <label for="builtUpArea" class="block text-lg font-medium text-gray-700 mb-2">
+        <div class="bg-blue-50 p-4 rounded-xl shadow-inner mb-6">
+            <div class="mb-4">
+                <label for="builtUpArea" class="block text-base sm:text-lg font-medium text-gray-700 mb-2">
                     Enter your desired Built-Up Area (in sq.ft.):
                 </label>
                 <input type="number" id="builtUpArea" placeholder="e.g., 1000" min="1"
-                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
                        aria-describedby="areaError">
-                <p id="areaError" class="text-red-600 text-sm mt-2 hidden error-message">Please enter a valid positive number for the built-up area.</p>
+                <p id="areaError" class="text-red-600 text-xs sm:text-sm mt-2 hidden error-message">Please enter a valid positive number for the built-up area.</p>
             </div>
 
-            <div class="flex items-center mb-6">
-                <input type="checkbox" id="includeCarpentry" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500" aria-label="Include carpentry work">
-                <label for="includeCarpentry" class="ml-3 text-lg font-medium text-gray-700">
+            <div class="flex items-center mb-4">
+                <input type="checkbox" id="includeCarpentry" class="h-4 w-4 text-blue-600 rounded focus:ring-blue-500" aria-label="Include carpentry work">
+                <label for="includeCarpentry" class="ml-2 text-base sm:text-lg font-medium text-gray-700">
                     Include Carpentry Work (Doors/Windows frames & shutters, basic wood work)
                 </label>
             </div>
 
             <div class="flex space-x-4">
                 <button id="calculateBtn"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                     Calculate Estimate
                 </button>
                 <button id="resetBtn"
-                        class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                        class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                     Reset Rates
                 </button>
             </div>
-            <p id="rateError" class="text-red-600 text-sm mt-4 hidden error-message">Please ensure all rates are positive numbers and max is not less than min.</p>
+            <p id="rateError" class="text-red-600 text-xs sm:text-sm mt-3 hidden error-message">Please ensure all rates are positive numbers and max is not less than min.</p>
         </div>
 
-        <div class="bg-purple-50 p-6 rounded-xl shadow-inner mb-8">
-            <h2 class="text-2xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">Customize Rates (per unit)</h2>
-            <p class="text-center text-gray-600 mb-4">Default rates for Amravati (2025):</p>
-            <ul class="list-disc list-inside text-gray-600 mb-6 text-sm">
+        <div class="bg-purple-50 p-4 rounded-xl shadow-inner mb-6">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 text-center">Customize Rates (per unit)</h2>
+            <p class="text-center text-gray-600 mb-3 text-sm">Default rates for Amravati (2025):</p>
+            <ul class="list-disc list-inside text-gray-600 mb-4 text-xs sm:text-sm">
                 <li>Cement: ₹350–₹420 per bag</li>
                 <li>River Sand: ₹77–₹92 per cft</li>
                 <li>Steel (TMT): ₹55–₹63 per kg</li>
@@ -110,44 +211,44 @@
                 <li>Timber: ₹782–₹978 per cu.ft.</li>
                 <li>Teak Wood: ₹1708–₹2135 per cu.ft.</li>
             </ul>
-            <p class="text-center text-gray-600 mb-6">Adjust the min and max rates for materials and labor as per your area's current market prices.</p>
+            <p class="text-center text-gray-600 mb-4 text-sm">Adjust the min and max rates for materials and labor as per your area's current market prices.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="col-span-1">
                     <h3 class="text-lg font-semibold text-gray-700 mb-2">Material Rates</h3>
                     <div class="space-y-3">
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-cement-min" class="text-gray-600 w-1/2">Cement (per bag):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-cement-min" class="text-gray-600">Cement (per bag):</label>
                             <input type="number" id="rate-cement-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹350–₹420 per 50kg bag">
                             <input type="number" id="rate-cement-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹350–₹420 per 50kg bag">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-riverSand-min" class="text-gray-600 w-1/2">River Sand (per cft):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-riverSand-min" class="text-gray-600">River Sand (per cft):</label>
                             <input type="number" id="rate-riverSand-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹77–₹92 per cft">
                             <input type="number" id="rate-riverSand-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹77–₹92 per cft">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-steel-min" class="text-gray-600 w-1/2">Steel (per kg):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-steel-min" class="text-gray-600">Steel (per kg):</label>
                             <input type="number" id="rate-steel-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹55–₹63 per kg">
                             <input type="number" id="rate-steel-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹55–₹63 per kg">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-clayBricks-min" class="text-gray-600 w-1/2">Clay Bricks (per pc):</label>
-                            <input type="number" id="rate-clayBricks-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹11–₹13 per piece">
+                        <div class="rate-input-group">
+                            <label for="rate-clayBricks-min" class="text-gray-600">Clay Bricks (per pc):</label>
+                            <input type="number" id="rate-clayBricks-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step士: 0.01" data-tooltip="Typical range: ₹11–₹13 per piece">
                             <input type="number" id="rate-clayBricks-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹11–₹13 per piece">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-gravel-min" class="text-gray-600 w-1/2">Gravel (per cft):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-gravel-min" class="text-gray-600">Gravel (per cft):</label>
                             <input type="number" id="rate-gravel-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹30–₹36 per cft">
                             <input type="number" id="rate-gravel-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹30–₹36 per cft">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-floorTiles-min" class="text-gray-600 w-1/2">Floor Tiles (per sq.ft.):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-floorTiles-min" class="text-gray-600">Floor Tiles (per sq.ft.):</label>
                             <input type="number" id="rate-floorTiles-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹65–₹85 per sq.ft.">
                             <input type="number" id="rate-floorTiles-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹65–₹85 per sq.ft.">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-paint-min" class="text-gray-600 w-1/2">Paint (per Litre):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-paint-min" class="text-gray-600">Paint (per Litre):</label>
                             <input type="number" id="rate-paint-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹250–₹350 per litre">
                             <input type="number" id="rate-paint-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹250–₹350 per litre">
                         </div>
@@ -157,18 +258,18 @@
                 <div class="col-span-1">
                     <h3 class="text-lg font-semibold text-gray-700 mb-2">Labor & Carpentry Rates</h3>
                     <div class="space-y-3">
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-labor-min" class="text-gray-600 w-1/2">Labor (per sq.ft.):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-labor-min" class="text-gray-600">Labor (per sq.ft.):</label>
                             <input type="number" id="rate-labor-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹305–₹450 per sq.ft.">
                             <input type="number" id="rate-labor-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹305–₹450 per sq.ft.">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-timber-min" class="text-gray-600 w-1/2">Timber (per cu.ft.):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-timber-min" class="text-gray-600">Timber (per cu.ft.):</label>
                             <input type="number" id="rate-timber-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹782–₹978 per cu.ft.">
                             <input type="number" id="rate-timber-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹782–₹978 per cu.ft.">
                         </div>
-                        <div class="rate-input-group flex items-center justify-between">
-                            <label for="rate-teakWood-min" class="text-gray-600 w-1/2">Teak Wood (per cu.ft.):</label>
+                        <div class="rate-input-group">
+                            <label for="rate-teakWood-min" class="text-gray-600">Teak Wood (per cu.ft.):</label>
                             <input type="number" id="rate-teakWood-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹1708–₹2135 per cu.ft.">
                             <input type="number" id="rate-teakWood-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹1708–₹2135 per cu.ft.">
                         </div>
@@ -177,116 +278,124 @@
             </div>
         </div>
 
-        <div class="bg-green-50 p-6 rounded-xl shadow-inner mb-8">
-            <h2 class="text-2xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">About Ar. Prabal</h2>
-            <p class="text-gray-600 mb-4">
+        <div class="bg-green-50 p-4 rounded-xl shadow-inner mb-6">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 text-center">About Ar. Prabal</h2>
+            <p class="text-gray-600 mb-3 text-sm">
                 Ar. Prabal is a dynamic architect with 5 years of experience in delivering innovative and sustainable architectural solutions across Nagpur, Amravati, Bhopal, and various cities in the Vidarbha region. Known for his client-centric approach, he specializes in residential and commercial projects, blending aesthetic design with practical functionality.
             </p>
-            <ul class="list-disc list-inside text-gray-600 space-y-2">
-                <li><strong>Expertise in Residential Design:</strong> Designed and managed numerous residential projects, including modern homes in Amravati and Nagpur, ensuring cost-effective and durable builds.</li>
-                <li><strong>Regional Impact:</strong> Contributed to Vidarbha’s urban landscape with sustainable designs for homes and community spaces, utilizing local materials.</li>
-                <li><strong>Bhopal Projects:</strong> Delivered innovative commercial designs in Bhopal, integrating modern aesthetics with the city’s cultural heritage.</li>
-                <li><strong>Client Trust:</strong> Recognized for transparent cost estimations and reliable project execution, helping clients realize their vision within budget.</li>
-                <li><strong>Awards & Recognition:</strong> Awarded “Promising Young Architect” in Vidarbha for creative designs and commitment to sustainable architecture.</li>
+            <ul class="list-disc list-inside text-gray-600 space-y-2 text-xs sm:text-sm">
+                <li><strong class="font-medium">Expertise in Residential Design:</strong> Designed and managed numerous residential projects, including modern homes in Amravati and Nagpur, ensuring cost-effective and durable builds.</li>
+                <li><strong class="font-medium">Regional Impact:</strong> Contributed to Vidarbha’s urban landscape with sustainable designs for homes and community spaces, utilizing local materials.</li>
+                <li><strong class="font-medium">Bhopal Projects:</strong> Delivered innovative commercial designs in Bhopal, integrating modern aesthetics with the city’s cultural heritage.</li>
+                <li><strong class="font-medium">Client Trust:</strong> Recognized for transparent cost estimations and reliable project execution, helping clients realize their vision within budget.</li>
+                <li><strong class="font-medium">Awards & Recognition:</strong> Awarded “Promising Young Architect” in Vidarbha for creative designs and commitment to sustainable architecture.</li>
             </ul>
-            <p class="text-gray-600 mt-4">
+            <p class="text-gray-600 mt-3 text-sm">
                 Contact Ar. Prabal at <a href="tel:+918830236556" class="text-blue-600 hover:underline">8830236556</a> for personalized consultation and project inquiries.
             </p>
         </div>
 
-        <div class="text-center text-gray-700 text-md mb-8">
+        <div class="text-center text-gray-700 text-sm mb-6">
             <p>Made by Ar. Prabal</p>
             <p>Contact: <a href="tel:+918830236556" class="text-blue-600 hover:underline">8830236556</a></p>
         </div>
 
         <div id="resultsSection" class="hidden">
-            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Estimated Construction Cost Breakdown</h2>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">Estimated Construction Cost Breakdown</h2>
 
-            <div class="bg-gray-50 p-6 rounded-xl shadow-md mb-8">
-                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">I. Estimated Material Cost Breakdown</h3>
+            <div class="bg-gray-50 p-4 rounded-xl shadow-md mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3">I. Estimated Material Cost Breakdown</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white rounded-lg shadow-sm">
                         <thead>
-                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-                                <th class="py-3 px-6 text-left">Material</th>
-                                <th class="py-3 px-6 text-center">Est. Quantity</th>
-                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-xs sm:text-sm leading-normal">
+                                <th class="py-2 px-4 text-left">Material</th>
+                                <th class="py-2 px-4 text-center">Est. Quantity</th>
+                                <th class="py-2 px-4 text-center">Unit Rate (Range)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Min)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Max)</th>
                             </tr>
                         </thead>
-                        <tbody id="materialCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                        <tbody id="materialCostTableBody" class="text-gray-600 text-sm font-light">
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-gray-50 p-6 rounded-xl shadow-md mb-8">
-                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">II. Estimated Labor Cost Breakdown</h3>
+            <div class="bg-gray-50 p-4 rounded-xl shadow-md mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3">II. Estimated Labor Cost Breakdown</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white rounded-lg shadow-sm">
                         <thead>
-                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-                                <th class="py-3 px-6 text-left">Labor Type</th>
-                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-xs sm:text-sm leading-normal">
+                                <th class="py-2 px-4 text-left">Labor Type</th>
+                                <th class="py-2 px-4 text-center">Unit Rate (Range)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Min)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Max)</th>
                             </tr>
                         </thead>
-                        <tbody id="laborCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                        <tbody id="laborCostTableBody" class="text-gray-600 text-sm font-light">
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="carpentryCostSection" class="bg-gray-50 p-6 rounded-xl shadow-md mb-8 hidden">
-                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">III. Optional Carpentry Work Cost</h3>
+            <div id="carpentryCostSection" class="bg-gray-50 p-4 rounded-xl shadow-md mb-6 hidden">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3">III. Optional Carpentry Work Cost</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white rounded-lg shadow-sm">
                         <thead>
-                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-                                <th class="py-3 px-6 text-left">Material</th>
-                                <th class="py-3 px-6 text-center">Est. Quantity</th>
-                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
-                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-xs sm:text-sm leading-normal">
+                                <th class="py-2 px-4 text-left">Material</th>
+                                <th class="py-2 px-4 text-center">Est. Quantity</th>
+                                <th class="py-2 px-4 text-center">Unit Rate (Range)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Min)</th>
+                                <th class="py-2 px-4 text-right">Est. Cost (Max)</th>
                             </tr>
                         </thead>
-                        <tbody id="carpentryCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                        <tbody id="carpentryCostTableBody" class="text-gray-600 text-sm font-light">
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-blue-100 p-6 rounded-xl shadow-md mb-8">
-                <h3 class="text-xl sm:text-2xl font-semibold text-blue-800 mb-4 text-center">Cost Distribution</h3>
+            <div class="bg-blue-100 p-4 rounded-xl shadow-md mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-blue-800 mb-3 text-center">Cost Distribution</h3>
                 <canvas id="costChart" class="w-full h-64"></canvas>
             </div>
 
-            <div class="bg-blue-100 p-6 rounded-xl shadow-lg">
-                <h3 class="text-xl sm:text-2xl font-semibold text-blue-800 mb-4 text-center">Summary of Estimated Construction Cost (Material + Labor)</h3>
+            <div class="bg-blue-100 p-4 rounded-xl shadow-lg mb-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-blue-800 mb-3 text-center">Summary of Estimated Construction Cost (Material + Labor)</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white rounded-lg shadow-sm">
                         <thead>
-                            <tr class="bg-blue-200 text-blue-800 uppercase text-sm leading-normal">
-                                <th class="py-3 px-6 text-left">Quality Level</th>
-                                <th class="py-3 px-6 text-center">Est. Cost per sq.ft.</th>
-                                <th class="py-3 px-6 text-right">Total Est. Cost (Min)</th>
-                                <th class="py-3 px-6 text-right">Total Est. Cost (Max)</th>
+                            <tr class="bg-blue-200 text-blue-800 uppercase text-xs sm:text-sm leading-normal">
+                                <th class="py-2 px-4 text-left">Quality Level</th>
+                                <th class="py-2 px-4 text-center">Est. Cost per sq.ft.</th>
+                                <th class="py-2 px-4 text-right">Total Est. Cost (Min)</th>
+                                <th class="py-2 px-4 text-right">Total Est. Cost (Max)</th>
                             </tr>
                         </thead>
-                        <tbody id="summaryCostTableBody" class="text-gray-700 text-base font-medium"></tbody>
+                        <tbody id="summaryCostTableBody" class="text-gray-700 text-sm font-medium">
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
                     </table>
                 </div>
                 <button id="downloadPdfBtn"
-                        class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                        class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                     Download Estimate as PDF
                 </button>
-                <p class="text-sm text-gray-600 mt-4 text-center">
+                <p class="text-xs sm:text-sm text-gray-600 mt-3 text-center">
                     Note: These overall quality estimates are indicative and cover the combined material and labor cost for a typical residential build.
                 </p>
             </div>
 
-            <div class="bg-yellow-50 p-6 rounded-xl shadow-inner mt-8">
+            <div class="bg-yellow-50 p-4 rounded-xl shadow-inner">
                 <h3 class="text-lg font-semibold text-yellow-800 mb-3">Important Notes:</h3>
-                <ul class="list-disc list-inside text-gray-700 text-sm space-y-2">
+                <ul class="list-disc list-inside text-gray-700 text-xs sm:text-sm space-y-2">
                     <li><strong class="font-medium">Prices are estimates for 2025 and may vary</strong> based on brand, supplier, quality, market fluctuations, and specific design requirements.</li>
                     <li><strong class="font-medium">Labor rates can fluctuate</strong> based on project complexity, location within Amravati, and labor availability.</li>
                     <li><strong class="font-medium">The quantities per sq.ft. are approximate averages</strong> for typical residential construction. Actual consumption may vary based on structural design, wall thickness, specific finishes, and wastage.</li>
@@ -380,8 +489,9 @@
                 row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
                 data.forEach((item, index) => {
                     const cell = document.createElement('td');
-                    cell.classList.add('py-3', 'px-6');
+                    cell.classList.add('py-2', 'px-4');
                     cell.classList.add(index === 0 ? 'text-left' : (typeof item === 'number' || item.includes('₹') ? 'text-right' : 'text-center'));
+                    cell.setAttribute('data-label', data[0]); // For mobile stacking
                     cell.textContent = item;
                     row.appendChild(cell);
                 });
