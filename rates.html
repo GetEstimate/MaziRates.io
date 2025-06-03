@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amravati Home Construction Cost Estimator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .rate-input-group input {
+            width: calc(50% - 8px);
+        }
+        .tooltip {
+            position: relative;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .error-message {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+            <span class="block">Amravati Home Construction Cost Estimator</span>
+            <span class="block text-xl sm:text-2xl text-blue-600 mt-2">Get Your Basic Estimate for 2025</span>
+        </h1>
+
+        <p class="text-center text-gray-600 mb-8">
+            This tool provides a basic estimate for residential construction costs in Amravati based on your desired built-up area.
+            Please note that these are estimates and actual costs may vary.
+        </p>
+
+        <div class="bg-blue-50 p-6 rounded-xl shadow-inner mb-8">
+            <div class="mb-6">
+                <label for="builtUpArea" class="block text-lg font-medium text-gray-700 mb-2">
+                    Enter your desired Built-Up Area (in sq.ft.):
+                </label>
+                <input type="number" id="builtUpArea" placeholder="e.g., 1000" min="1"
+                       class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
+                       aria-describedby="areaError">
+                <p id="areaError" class="text-red-600 text-sm mt-2 hidden error-message">Please enter a valid positive number for the built-up area.</p>
+            </div>
+
+            <div class="flex items-center mb-6">
+                <input type="checkbox" id="includeCarpentry" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500" aria-label="Include carpentry work">
+                <label for="includeCarpentry" class="ml-3 text-lg font-medium text-gray-700">
+                    Include Carpentry Work (Doors/Windows frames & shutters, basic wood work)
+                </label>
+            </div>
+
+            <div class="flex space-x-4">
+                <button id="calculateBtn"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Calculate Estimate
+                </button>
+                <button id="resetBtn"
+                        class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Reset Rates
+                </button>
+            </div>
+            <p id="rateError" class="text-red-600 text-sm mt-4 hidden error-message">Please ensure all rates are positive numbers and max is not less than min.</p>
+        </div>
+
+        <div class="bg-purple-50 p-6 rounded-xl shadow-inner mb-8">
+            <h2 class="text-2xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">Customize Rates (per unit)</h2>
+            <p class="text-center text-gray-600 mb-4">Default rates for Amravati (2025):</p>
+            <ul class="list-disc list-inside text-gray-600 mb-6 text-sm">
+                <li>Cement: ₹350–₹420 per bag</li>
+                <li>River Sand: ₹77–₹92 per cft</li>
+                <li>Steel (TMT): ₹55–₹63 per kg</li>
+                <li>Clay Bricks: ₹11–₹13 per piece</li>
+                <li>Gravel: ₹30–₹36 per cft</li>
+                <li>Floor Tiles: ₹65–₹85 per sq.ft.</li>
+                <li>Paint: ₹250–₹350 per litre</li>
+                <li>Labor: ₹305–₹450 per sq.ft.</li>
+                <li>Timber: ₹782–₹978 per cu.ft.</li>
+                <li>Teak Wood: ₹1708–₹2135 per cu.ft.</li>
+            </ul>
+            <p class="text-center text-gray-600 mb-6">Adjust the min and max rates for materials and labor as per your area's current market prices.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="col-span-1">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Material Rates</h3>
+                    <div class="space-y-3">
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-cement-min" class="text-gray-600 w-1/2">Cement (per bag):</label>
+                            <input type="number" id="rate-cement-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹350–₹420 per 50kg bag">
+                            <input type="number" id="rate-cement-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹350–₹420 per 50kg bag">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-riverSand-min" class="text-gray-600 w-1/2">River Sand (per cft):</label>
+                            <input type="number" id="rate-riverSand-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹77–₹92 per cft">
+                            <input type="number" id="rate-riverSand-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹77–₹92 per cft">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-steel-min" class="text-gray-600 w-1/2">Steel (per kg):</label>
+                            <input type="number" id="rate-steel-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹55–₹63 per kg">
+                            <input type="number" id="rate-steel-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹55–₹63 per kg">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-clayBricks-min" class="text-gray-600 w-1/2">Clay Bricks (per pc):</label>
+                            <input type="number" id="rate-clayBricks-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹11–₹13 per piece">
+                            <input type="number" id="rate-clayBricks-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹11–₹13 per piece">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-gravel-min" class="text-gray-600 w-1/2">Gravel (per cft):</label>
+                            <input type="number" id="rate-gravel-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹30–₹36 per cft">
+                            <input type="number" id="rate-gravel-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹30–₹36 per cft">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-floorTiles-min" class="text-gray-600 w-1/2">Floor Tiles (per sq.ft.):</label>
+                            <input type="number" id="rate-floorTiles-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹65–₹85 per sq.ft.">
+                            <input type="number" id="rate-floorTiles-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹65–₹85 per sq.ft.">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-paint-min" class="text-gray-600 w-1/2">Paint (per Litre):</label>
+                            <input type="number" id="rate-paint-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹250–₹350 per litre">
+                            <input type="number" id="rate-paint-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹250–₹350 per litre">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-1">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Labor & Carpentry Rates</h3>
+                    <div class="space-y-3">
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-labor-min" class="text-gray-600 w-1/2">Labor (per sq.ft.):</label>
+                            <input type="number" id="rate-labor-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹305–₹450 per sq.ft.">
+                            <input type="number" id="rate-labor-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹305–₹450 per sq.ft.">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-timber-min" class="text-gray-600 w-1/2">Timber (per cu.ft.):</label>
+                            <input type="number" id="rate-timber-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹782–₹978 per cu.ft.">
+                            <input type="number" id="rate-timber-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹782–₹978 per cu.ft.">
+                        </div>
+                        <div class="rate-input-group flex items-center justify-between">
+                            <label for="rate-teakWood-min" class="text-gray-600 w-1/2">Teak Wood (per cu.ft.):</label>
+                            <input type="number" id="rate-teakWood-min" class="px-2 py-1 border rounded-md text-sm tooltip" placeholder="Min" min="0" step="0.01" data-tooltip="Typical range: ₹1708–₹2135 per cu.ft.">
+                            <input type="number" id="rate-teakWood-max" class="px-2 py-1 border rounded-md text-sm ml-2 tooltip" placeholder="Max" min="0" step="0.01" data-tooltip="Typical range: ₹1708–₹2135 per cu.ft.">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-green-50 p-6 rounded-xl shadow-inner mb-8">
+            <h2 class="text-2xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">About Ar. Prabal</h2>
+            <p class="text-gray-600 mb-4">
+                Ar. Prabal is a dynamic architect with 5 years of experience in delivering innovative and sustainable architectural solutions across Nagpur, Amravati, Bhopal, and various cities in the Vidarbha region. Known for his client-centric approach, he specializes in residential and commercial projects, blending aesthetic design with practical functionality.
+            </p>
+            <ul class="list-disc list-inside text-gray-600 space-y-2">
+                <li><strong>Expertise in Residential Design:</strong> Designed and managed numerous residential projects, including modern homes in Amravati and Nagpur, ensuring cost-effective and durable builds.</li>
+                <li><strong>Regional Impact:</strong> Contributed to Vidarbha’s urban landscape with sustainable designs for homes and community spaces, utilizing local materials.</li>
+                <li><strong>Bhopal Projects:</strong> Delivered innovative commercial designs in Bhopal, integrating modern aesthetics with the city’s cultural heritage.</li>
+                <li><strong>Client Trust:</strong> Recognized for transparent cost estimations and reliable project execution, helping clients realize their vision within budget.</li>
+                <li><strong>Awards & Recognition:</strong> Awarded “Promising Young Architect” in Vidarbha for creative designs and commitment to sustainable architecture.</li>
+            </ul>
+            <p class="text-gray-600 mt-4">
+                Contact Ar. Prabal at <a href="tel:+918830236556" class="text-blue-600 hover:underline">8830236556</a> for personalized consultation and project inquiries.
+            </p>
+        </div>
+
+        <div class="text-center text-gray-700 text-md mb-8">
+            <p>Made by Ar. Prabal</p>
+            <p>Contact: <a href="tel:+918830236556" class="text-blue-600 hover:underline">8830236556</a></p>
+        </div>
+
+        <div id="resultsSection" class="hidden">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Estimated Construction Cost Breakdown</h2>
+
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md mb-8">
+                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">I. Estimated Material Cost Breakdown</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-sm">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Material</th>
+                                <th class="py-3 px-6 text-center">Est. Quantity</th>
+                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md mb-8">
+                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">II. Estimated Labor Cost Breakdown</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-sm">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Labor Type</th>
+                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="laborCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="carpentryCostSection" class="bg-gray-50 p-6 rounded-xl shadow-md mb-8 hidden">
+                <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">III. Optional Carpentry Work Cost</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-sm">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Material</th>
+                                <th class="py-3 px-6 text-center">Est. Quantity</th>
+                                <th class="py-3 px-6 text-center">Unit Rate (Range)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Min)</th>
+                                <th class="py-3 px-6 text-right">Est. Cost (Max)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carpentryCostTableBody" class="text-gray-600 text-base font-light"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-blue-100 p-6 rounded-xl shadow-md mb-8">
+                <h3 class="text-xl sm:text-2xl font-semibold text-blue-800 mb-4 text-center">Cost Distribution</h3>
+                <canvas id="costChart" class="w-full h-64"></canvas>
+            </div>
+
+            <div class="bg-blue-100 p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl sm:text-2xl font-semibold text-blue-800 mb-4 text-center">Summary of Estimated Construction Cost (Material + Labor)</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-sm">
+                        <thead>
+                            <tr class="bg-blue-200 text-blue-800 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Quality Level</th>
+                                <th class="py-3 px-6 text-center">Est. Cost per sq.ft.</th>
+                                <th class="py-3 px-6 text-right">Total Est. Cost (Min)</th>
+                                <th class="py-3 px-6 text-right">Total Est. Cost (Max)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryCostTableBody" class="text-gray-700 text-base font-medium"></tbody>
+                    </table>
+                </div>
+                <button id="downloadPdfBtn"
+                        class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+                    Download Estimate as PDF
+                </button>
+                <p class="text-sm text-gray-600 mt-4 text-center">
+                    Note: These overall quality estimates are indicative and cover the combined material and labor cost for a typical residential build.
+                </p>
+            </div>
+
+            <div class="bg-yellow-50 p-6 rounded-xl shadow-inner mt-8">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-3">Important Notes:</h3>
+                <ul class="list-disc list-inside text-gray-700 text-sm space-y-2">
+                    <li><strong class="font-medium">Prices are estimates for 2025 and may vary</strong> based on brand, supplier, quality, market fluctuations, and specific design requirements.</li>
+                    <li><strong class="font-medium">Labor rates can fluctuate</strong> based on project complexity, location within Amravati, and labor availability.</li>
+                    <li><strong class="font-medium">The quantities per sq.ft. are approximate averages</strong> for typical residential construction. Actual consumption may vary based on structural design, wall thickness, specific finishes, and wastage.</li>
+                    <li>This estimate is for basic construction elements. <strong class="font-medium">Additional costs</strong> for specialized finishes, plumbing fixtures, electrical fittings, sanitary ware, painting labor, land cost, architectural fees, government approvals, and unforeseen expenses are <strong class="font-medium">NOT included</strong> in the detailed material breakdown but are implicitly considered in the overall "Quality Level" estimates provided in the summary.</li>
+                    <li><strong class="font-medium">Carpentry work</strong> (doors, windows, built-in furniture) is a highly variable cost and the quantities listed are indicative. Actual costs will depend on the type of wood, design complexity, and fittings.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const { jsPDF } = window.jspdf;
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            const builtUpAreaInput = document.getElementById('builtUpArea');
+            const includeCarpentryCheckbox = document.getElementById('includeCarpentry');
+            const areaError = document.getElementById('areaError');
+            const rateError = document.getElementById('rateError');
+            const resultsSection = document.getElementById('resultsSection');
+            const materialCostTableBody = document.getElementById('materialCostTableBody');
+            const laborCostTableBody = document.getElementById('laborCostTableBody');
+            const carpentryCostSection = document.getElementById('carpentryCostSection');
+            const carpentryCostTableBody = document.getElementById('carpentryCostTableBody');
+            const summaryCostTableBody = document.getElementById('summaryCostTableBody');
+            const costChartCanvas = document.getElementById('costChart').getContext('2d');
+
+            let costChart;
+
+            // Default rates for Amravati (2025)
+            const initialAmravatiRates = {
+                cement: { min: 350, max: 420, unit: 'bag' },
+                riverSand: { min: 7700 / 100, max: 9240 / 100, unit: 'cft' },
+                steel: { min: 54945 / 1000, max: 63187 / 1000, unit: 'kg' },
+                clayBricks: { min: 11000 / 1000, max: 13000 / 1000, unit: 'pc' },
+                gravel: { min: 3000 / 100, max: 3600 / 100, unit: 'cft' },
+                floorTiles: { min: 65, max: 85, unit: 'sq.ft.' },
+                paint: { min: 250, max: 350, unit: 'Litre' },
+                timber: { min: 782, max: 978, unit: 'cu.ft.' },
+                teakWood: { min: 1708, max: 2135, unit: 'cu.ft.' },
+                labor: { min: 305, max: 450, unit: 'sq.ft.' }
+            };
+
+            // Populate rate inputs with default values
+            const resetRates = () => {
+                for (const key in initialAmravatiRates) {
+                    document.getElementById(`rate-${key}-min`).value = initialAmravatiRates[key].min;
+                    document.getElementById(`rate-${key}-max`).value = initialAmravatiRates[key].max;
+                }
+                rateError.classList.add('hidden');
+            };
+            resetRates();
+
+            // Material consumption rates per sq.ft.
+            const materialConsumption = {
+                cement: 0.4,
+                riverSand: 1.8,
+                steel: 4,
+                clayBricks: 11,
+                gravel: 1.5,
+                floorTiles: 1.1,
+                paint: 0.18,
+                timber: 0.05,
+                teakWood: 0.01
+            };
+
+            // Overall quality-based construction cost estimates
+            const overallQualityCosts = {
+                average: { label: 'Average Quality', rate: 1700 },
+                good: { label: 'Good Quality', rate: 1850 },
+                best: { label: 'Best Quality', rate: 2100 }
+            };
+
+            // Format currency in INR
+            const formatCurrency = (amount) => {
+                if (typeof amount !== 'number' || isNaN(amount)) {
+                    return 'N/A';
+                }
+                return new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount);
+            };
+
+            // Create table row
+            const createTableRow = (data, align = 'left') => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
+                data.forEach((item, index) => {
+                    const cell = document.createElement('td');
+                    cell.classList.add('py-3', 'px-6');
+                    cell.classList.add(index === 0 ? 'text-left' : (typeof item === 'number' || item.includes('₹') ? 'text-right' : 'text-center'));
+                    cell.textContent = item;
+                    row.appendChild(cell);
+                });
+                return row;
+            };
+
+            // Get current rates from inputs
+            const getCurrentRates = () => {
+                const currentRates = {};
+                for (const key in initialAmravatiRates) {
+                    const minInput = document.getElementById(`rate-${key}-min`);
+                    const maxInput = document.getElementById(`rate-${key}-max`);
+                    currentRates[key] = {
+                        min: parseFloat(minInput.value) || initialAmravatiRates[key].min,
+                        max: parseFloat(maxInput.value) || initialAmravatiRates[key].max,
+                        unit: initialAmravatiRates[key].unit
+                    };
+                }
+                return currentRates;
+            };
+
+            // Validate rates
+            const validateRates = (rates) => {
+                for (const key in rates) {
+                    const { min, max } = rates[key];
+                    if (isNaN(min) || isNaN(max) || min <= 0 || max <= 0 || max < min) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            // Calculate and display estimate
+            const calculateEstimate = () => {
+                const builtUpArea = parseFloat(builtUpAreaInput.value);
+                const currentRates = getCurrentRates();
+
+                // Input validation
+                if (isNaN(builtUpArea) || builtUpArea <= 0) {
+                    areaError.classList.remove('hidden');
+                    rateError.classList.add('hidden');
+                    resultsSection.classList.add('hidden');
+                    return;
+                }
+                if (!validateRates(currentRates)) {
+                    rateError.classList.remove('hidden');
+                    areaError.classList.add('hidden');
+                    resultsSection.classList.add('hidden');
+                    return;
+                }
+                areaError.classList.add('hidden');
+                rateError.classList.add('hidden');
+
+                calculateBtn.textContent = 'Calculating...';
+                calculateBtn.disabled = true;
+
+                setTimeout(() => {
+                    // Clear previous results
+                    materialCostTableBody.innerHTML = '';
+                    laborCostTableBody.innerHTML = '';
+                    carpentryCostTableBody.innerHTML = '';
+                    summaryCostTableBody.innerHTML = '';
+
+                    let totalMaterialMin = 0, totalMaterialMax = 0;
+                    let totalLaborMin = 0, totalLaborMax = 0;
+                    let totalCarpentryMin = 0, totalCarpentryMax = 0;
+
+                    // Material Cost Calculation
+                    const materials = [
+                        { name: 'Cement', key: 'cement', unitDisplay: 'bags' },
+                        { name: 'River Sand', key: 'riverSand', unitDisplay: 'cft' },
+                        { name: 'Steel (TMT)', key: 'steel', unitDisplay: 'kg' },
+                        { name: 'Clay Bricks', key: 'clayBricks', unitDisplay: 'pcs' },
+                        { name: 'Gravel', key: 'gravel', unitDisplay: 'cft' },
+                        { name: 'Floor Tiles', key: 'floorTiles', unitDisplay: 'sq.ft.' },
+                        { name: 'Paint (Material)', key: 'paint', unitDisplay: 'Litres' }
+                    ];
+
+                    materials.forEach(material => {
+                        const quantity = materialConsumption[material.key] * builtUpArea;
+                        const minCost = quantity * currentRates[material.key].min;
+                        const maxCost = quantity * currentRates[material.key].max;
+                        totalMaterialMin += minCost;
+                        totalMaterialMax += maxCost;
+
+                        materialCostTableBody.appendChild(createTableRow([
+                            material.name,
+                            `${quantity.toFixed(2)} ${material.unitDisplay}`,
+                            `${formatCurrency(currentRates[material.key].min)} – ${formatCurrency(currentRates[material.key].max)} / ${currentRates[material.key].unit}`,
+                            formatCurrency(minCost),
+                            formatCurrency(maxCost)
+                        ]));
+                    });
+
+                    // Labor Cost Calculation
+                    const laborTypes = [
+                        { name: 'Labor', key: 'labor' }
+                    ];
+
+                    laborTypes.forEach(labor => {
+                        const minCost = builtUpArea * currentRates[labor.key].min;
+                        const maxCost = builtUpArea * currentRates[labor.key].max;
+                        totalLaborMin += minCost;
+                        totalLaborMax += maxCost;
+
+                        laborCostTableBody.appendChild(createTableRow([
+                            labor.name,
+                            `${formatCurrency(currentRates[labor.key].min)} – ${formatCurrency(currentRates[labor.key].max)} / ${currentRates[labor.key].unit}`,
+                            formatCurrency(minCost),
+                            formatCurrency(maxCost)
+                        ]));
+                    });
+
+                    // Carpentry Cost Calculation
+                    if (includeCarpentryCheckbox.checked) {
+                        carpentryCostSection.classList.remove('hidden');
+                        const carpentryMaterials = [
+                            { name: 'Timber', key: 'timber', unitDisplay: 'cu.ft.' },
+                            { name: 'Teak Wood', key: 'teakWood', unitDisplay: 'cu.ft.' }
+                        ];
+
+                        carpentryMaterials.forEach(material => {
+                            const quantity = materialConsumption[material.key] * builtUpArea;
+                            const minCost = quantity * currentRates[material.key].min;
+                            const maxCost = quantity * currentRates[material.key].max;
+                            totalCarpentryMin += minCost;
+                            totalCarpentryMax += maxCost;
+
+                            carpentryCostTableBody.appendChild(createTableRow([
+                                material.name,
+                                `${quantity.toFixed(2)} ${material.unitDisplay}`,
+                                `${formatCurrency(currentRates[material.key].min)} – ${formatCurrency(currentRates[material.key].max)} / ${currentRates[material.key].unit}`,
+                                formatCurrency(minCost),
+                                formatCurrency(maxCost)
+                            ]));
+                        });
+                    } else {
+                        carpentryCostSection.classList.add('hidden');
+                    }
+
+                    // Cost Distribution Chart
+                    if (costChart) costChart.destroy();
+                    costChart = new Chart(costChartCanvas, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Materials', 'Labor', 'Carpentry'],
+                            datasets: [
+                                {
+                                    label: 'Min Cost (₹)',
+                                    data: [totalMaterialMin, totalLaborMin, includeCarpentryCheckbox.checked ? totalCarpentryMin : 0],
+                                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Max Cost (₹)',
+                                    data: [totalMaterialMax, totalLaborMax, includeCarpentryCheckbox.checked ? totalCarpentryMax : 0],
+                                    backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                                    borderColor: 'rgba(234, 179, 8, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Cost (₹)' } },
+                                x: { title: { display: true, text: 'Category' } }
+                            },
+                            plugins: {
+                                legend: { display: true, position: 'top' },
+                                title: { display: true, text: 'Cost Distribution' }
+                            }
+                        }
+                    });
+
+                    // Summary of Estimated Construction Cost
+                    for (const qualityKey in overallQualityCosts) {
+                        const quality = overallQualityCosts[qualityKey];
+                        const minTotalCost = builtUpArea * quality.rate;
+                        const maxTotalCost = builtUpArea * quality.rate;
+
+                        summaryCostTableBody.appendChild(createTableRow([
+                            quality.label,
+                            `${formatCurrency(quality.rate)} / sq.ft.`,
+                            formatCurrency(minTotalCost),
+                            formatCurrency(maxTotalCost)
+                        ]));
+                    }
+
+                    resultsSection.classList.remove('hidden');
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    calculateBtn.textContent = 'Calculate Estimate';
+                    calculateBtn.disabled = false;
+                }, 500); // Simulate processing delay
+            };
+
+            // Download PDF
+            const downloadPdf = () => {
+                const doc = new jsPDF();
+                doc.setFontSize(16);
+                doc.text('Amravati Home Construction Cost Estimate', 20, 20);
+                doc.setFontSize(12);
+                doc.text(`Built-Up Area: ${builtUpAreaInput.value} sq.ft.`, 20, 30);
+                doc.text(`Carpentry Included: ${includeCarpentryCheckbox.checked ? 'Yes' : 'No'}`, 20, 40);
+
+                let y = 50;
+                doc.setFontSize(14);
+                doc.text('Material Costs', 20, y);
+                y += 10;
+                doc.setFontSize(10);
+                Array.from(materialCostTableBody.children).forEach(row => {
+                    const cells = Array.from(row.children).map(cell => cell.textContent);
+                    doc.text(`${cells[0]}: ${cells[1]}, ${cells[2]}, Min: ${cells[3]}, Max: ${cells[4]}`, 20, y);
+                    y += 10;
+                });
+
+                y += 10;
+                doc.setFontSize(14);
+                doc.text('Labor Costs', 20, y);
+                y += 10;
+                doc.setFontSize(10);
+                Array.from(laborCostTableBody.children).forEach(row => {
+                    const cells = Array.from(row.children).map(cell => cell.textContent);
+                    doc.text(`${cells[0]}: ${cells[1]}, Min: ${cells[2]}, Max: ${cells[3]}`, 20, y);
+                    y += 10;
+                });
+
+                if (includeCarpentryCheckbox.checked) {
+                    y += 10;
+                    doc.setFontSize(14);
+                    doc.text('Carpentry Costs', 20, y);
+                    y += 10;
+                    doc.setFontSize(10);
+                    Array.from(carpentryCostTableBody.children).forEach(row => {
+                        const cells = Array.from(row.children).map(cell => cell.textContent);
+                        doc.text(`${cells[0]}: ${cells[1]}, ${cells[2]}, Min: ${cells[3]}, Max: ${cells[4]}`, 20, y);
+                        y += 10;
+                    });
+                }
+
+                y += 10;
+                doc.setFontSize(14);
+                doc.text('Summary', 20, y);
+                y += 10;
+                doc.setFontSize(10);
+                Array.from(summaryCostTableBody.children).forEach(row => {
+                    const cells = Array.from(row.children).map(cell => cell.textContent);
+                    doc.text(`${cells[0]}: ${cells[1]}, Min: ${cells[2]}, Max: ${cells[3]}`, 20, y);
+                    y += 10;
+                });
+
+                doc.save('Amravati_Construction_Estimate.pdf');
+            };
+
+            // Event listeners
+            calculateBtn.addEventListener('click', calculateEstimate);
+            resetBtn.addEventListener('click', resetRates);
+            downloadPdfBtn.addEventListener('click', downloadPdf);
+            includeCarpentryCheckbox.addEventListener('change', () => {
+                if (!resultsSection.classList.contains('hidden')) {
+                    calculateEstimate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
